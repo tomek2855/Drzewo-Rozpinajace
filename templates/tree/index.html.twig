@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% import 'tree/macros.html.twig' as macros %}
+
+{% block title %}Hello!{% endblock %}
+
+{% block body %}
+<div class="container">
+
+    <h1>{{ tree.name }}</h1>
+    <ul>
+        {{ macros.category_tree(tree) }}
+    </ul>
+
+    <br>
+
+    <form action="post">
+        
+    </form>
+
+</div>
+{% endblock %}
