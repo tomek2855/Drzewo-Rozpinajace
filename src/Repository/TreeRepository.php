@@ -19,7 +19,9 @@ class TreeRepository extends ServiceEntityRepository
         parent::__construct($registry, Tree::class);
     }
 
-//    public function
+//    public function moveLeafToNewParent($leafId, $newParentId){
+//
+//    }
 
 //    /**
 //     * @return Tree[] Returns an array of Tree objects

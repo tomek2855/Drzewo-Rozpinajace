@@ -4,7 +4,7 @@
 
     {% for leaf in tree.children %}
         <li>
-            <a href="{{ path('tree-show', {'id': leaf.id}) }}">{{ leaf.name }}</a>
+            <a href="{{ path('tree-show', {'id': leaf.id}) }}" id="{{ leaf.id }}" onclick="moveElements({{ leaf.id }})">{{ leaf.name }}</a>
             {% if leaf.children.count > 0 %}
                 <ul>
                     {{ self.category_tree(leaf) }}
