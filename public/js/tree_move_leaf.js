@@ -9,6 +9,8 @@ function activateMove(){
         isActivate = true;
         document.getElementById("button_activate").classList = "btn btn-danger";
 
+        alert("Wybierz kategorię, którą chcesz przenieść a następnie kliknij na kategorię, do której ma należeć.");
+
         deactivateA();
     }
     else {
@@ -30,6 +32,7 @@ function deactivateA() {
 function activateA(){
     for(var i = 0; i < elements.length; i++){
         elements[i].href = hrefs[i];
+        firstElement = secondElement = null;
     }
 }
 
@@ -41,7 +44,16 @@ function moveElements(id) {
     if(firstElement != null && secondElement == null){
         secondElement = id;
 
-        sendData();
+        if(firstElement != secondElement) {
+            sendData();
+        }
+        else {
+            alert("Nie możesz wybrać dwa razy tej samej kategorii!");
+            firstElement = secondElement = null;
+            activateA();
+            isActivate = false;
+            document.getElementById("button_activate").classList = "btn btn-dark";
+        }
     }
 
     if(firstElement == null && secondElement == null){

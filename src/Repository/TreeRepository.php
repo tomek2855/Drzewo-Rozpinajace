@@ -19,9 +19,14 @@ class TreeRepository extends ServiceEntityRepository
         parent::__construct($registry, Tree::class);
     }
 
-//    public function moveLeafToNewParent($leafId, $newParentId){
-//
-//    }
+    public function getMaxSequenceInParent($parent){
+        return $this->createQueryBuilder('t')
+            ->select('MAX(t.sequence)')
+            ->where('t.parent = :parent')
+            ->setParameter('parent', $parent)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
 //    /**
 //     * @return Tree[] Returns an array of Tree objects

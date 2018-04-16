@@ -7,6 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\OrderBy;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -20,10 +21,10 @@ class Tree {
      * @ORM\Column(type="integer")
      */
     private $id;
-
     /**
      * One Category has Many Categories.
      * @OneToMany(targetEntity="Tree", mappedBy="parent")
+     * @OrderBy({"sequence" = "ASC"})
      */
     private $children;
 
@@ -40,9 +41,51 @@ class Tree {
      */
     private $name;
 
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $depth;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $sequence;
+
     public function __construct() {
         $this->children = new ArrayCollection();
+        $this->sequence = 0;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getDepth() {
+        return $this->depth;
+    }
+
+    /**
+     * @param mixed $depth
+     */
+    public function setDepth($depth): void {
+        $this->depth = $depth;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSequence() {
+        return $this->sequence;
+    }
+
+    /**
+     * @param mixed $sequence
+     */
+    public function setSequence($sequence): void {
+        $this->sequence = $sequence;
+    }
+
+
 
     /**
      * @return mixed
