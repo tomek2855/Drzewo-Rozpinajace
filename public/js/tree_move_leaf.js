@@ -1,21 +1,21 @@
-var isActivate = false;
+var isActivateMove = false;
 var elements;
 var hrefs = [];
 
 function activateMove(){
     elements = document.getElementsByTagName("a");
 
-    if(!isActivate) {
-        isActivate = true;
-        document.getElementById("button_activate").classList = "btn btn-danger";
+    if(!isActivateMove) {
+        isActivateMove = true;
+        document.getElementById("button_move").classList = "btn btn-danger";
 
         alert("Wybierz kategorię, którą chcesz przenieść a następnie kliknij na kategorię, do której ma należeć.");
 
         deactivateA();
     }
     else {
-        isActivate = false;
-        document.getElementById("button_activate").classList = "btn btn-dark";
+        isActivateMove = false;
+        document.getElementById("button_move").classList = "btn btn-dark";
 
         activateA();
     }
@@ -44,15 +44,15 @@ function moveElements(id) {
     if(firstElement != null && secondElement == null){
         secondElement = id;
 
-        if(firstElement != secondElement) {
-            sendData();
+        if(firstElement != secondElement && isActivateMove) {
+            sendDataMove();
         }
         else {
             alert("Nie możesz wybrać dwa razy tej samej kategorii!");
             firstElement = secondElement = null;
             activateA();
-            isActivate = false;
-            document.getElementById("button_activate").classList = "btn btn-dark";
+            isActivateMove = false;
+            document.getElementById("button_move").classList = "btn btn-dark";
         }
     }
 
@@ -63,7 +63,7 @@ function moveElements(id) {
     return false;
 }
 
-function sendData() {
+function sendDataMove() {
     var http = new XMLHttpRequest();
     http.open("POST", "/tree/move", true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

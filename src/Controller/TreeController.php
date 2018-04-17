@@ -18,11 +18,11 @@ class TreeController extends Controller {
             'id' => $id
         ]);
 
-        return $this->render('tree/index.html.twig', [
-           'tree' => $tree
+        return $this->render('tree/categories.html.twig', [
+           'categories' => $tree
         ]);
     }
-
+///////////////////////////
     private function recalculateDepth($p){
         if($p->getChildren())
             foreach ($p->getChildren() as $child){
@@ -76,7 +76,7 @@ class TreeController extends Controller {
         $em->persist($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree');
+        return $this->redirectToRoute('tree-show-depth', ['id' => $id]);
     }
 
     /**
@@ -118,7 +118,8 @@ class TreeController extends Controller {
      *     name="tree-delete-leaf",
      *     requirements={
      *          "id"="\d+"
-     *      }
+     *      },
+     *     methods={"DELETE"}
      * )
      */
     public function deleteLeaf($id){
@@ -139,7 +140,7 @@ class TreeController extends Controller {
         $em->remove($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree');
+        return new Response('OK', Response::HTTP_OK);
     }
 
 
@@ -148,7 +149,8 @@ class TreeController extends Controller {
      *     name="tree-delete-branch",
      *     requirements={
      *          "id"="\d+"
-     *      }
+     *      },
+     *     methods={"DELETE"}
      * )
      */
     public function deleteBranch($id){
@@ -161,7 +163,7 @@ class TreeController extends Controller {
         $em->remove($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree');
+        return new Response('OK', Response::HTTP_OK);
     }
 
     /**
@@ -193,7 +195,7 @@ class TreeController extends Controller {
         $em->persist($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree');
+        return $this->redirectToRoute('tree-show-depth', ['id' => $id]);
     }
 
     /**
@@ -206,12 +208,16 @@ class TreeController extends Controller {
      */
     public function treeShowOneDepth($id = 1){
         $tree = $this->getDoctrine()->getRepository(Tree::class)->findOneBy([
+            'id' => 1
+        ]);
+
+        $categories = $this->getDoctrine()->getRepository(Tree::class)->findOneBy([
             'id' => $id
         ]);
 
-
-        return $this->render('tree/show-children.twig', [
-            'children' => $tree->getChildren()
+        return $this->render('tree/index.html.twig', [
+            'tree' => $tree,
+            'categories' => $categories
         ]);
     }
 
@@ -231,11 +237,16 @@ class TreeController extends Controller {
         ]);
 
         $parentId = $leaf->getParent()->getId();
+        $sequence = $leaf->getSequence();
 
-        $leaf2 = $em->getRepository(Tree::class)->findOneBy([
-            'parent' => $parentId,
-            'sequence' => $leaf->getSequence()-1
-        ]);
+        do {
+            $leaf2 = $em->getRepository(Tree::class)->findOneBy([
+                'parent' => $parentId,
+                'sequence' => $sequence - 1
+            ]);
+
+            $sequence--;
+        } while($leaf2 == null);
 
         $temp = $leaf->getSequence();
         $leaf->setSequence($leaf2->getSequence());
@@ -262,11 +273,17 @@ class TreeController extends Controller {
         ]);
 
         $parentId = $leaf->getParent()->getId();
+        $sequence = $leaf->getSequence();
 
-        $leaf2 = $em->getRepository(Tree::class)->findOneBy([
-            'parent' => $parentId,
-            'sequence' => $leaf->getSequence()+1
-        ]);
+        do {
+            $leaf2 = $em->getRepository(Tree::class)->findOneBy([
+                'parent' => $parentId,
+                'sequence' => $sequence + 1
+            ]);
+
+            $sequence++;
+        } while($leaf2 == null);
+
 
         $temp = $leaf->getSequence();
         $leaf->setSequence($leaf2->getSequence());

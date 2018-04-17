@@ -1,4 +1,4 @@
-{#{% use 'navbar.html.twig' %}#}
+{% use 'navbar.html.twig' %}
 {#{% use 'footer.html.twig' %}#}
 
 <!doctype html>
@@ -11,13 +11,15 @@
 
     {% block stylesheets %}
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+              rel="stylesheet">
     {% endblock %}
 
     <title>Hello, world!</title>
 </head>
 <body>
-{#{{ block('navbar') }}#}
+{{ block('navbar') }}
 {% block body %}{% endblock %}
 {#{{ block('footer') }}#}
 

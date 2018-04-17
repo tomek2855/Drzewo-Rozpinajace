@@ -1,10 +1,12 @@
-{% macro category_tree(tree) %}
+{% macro category_tree(category) %}
 
     {% import _self as self %}
 
-    {% for leaf in tree.children %}
+    {% for leaf in category.children %}
         <li>
-            <a href="{{ path('tree-show', {'id': leaf.id}) }}" id="{{ leaf.id }}" onclick="moveElements({{ leaf.id }})">{{ leaf.name }}</a> {{ leaf.depth }}
+            <a href="{{ path('tree-show-depth', {'id': leaf.id}) }}" id="{{ leaf.id }}" onclick="moveElements({{ leaf.id }});deleteCategory({{ leaf.id }});deleteCategoryAll({{ leaf.id }});">{{ leaf.name }}</a>
+
+            <span style="font-size: small;">({{ leaf.children.count }})</span>
             {% if leaf.children.count > 0 %}
                 <ul>
                     {{ self.category_tree(leaf) }}
@@ -12,4 +14,13 @@
             {% endif %}
         </li>
     {% endfor %}
+{% endmacro %}
+
+{% macro breadcrumb(categories) %}
+    {% import _self as self %}
+
+    {% if categories.parent %}
+        {{ self.breadcrumb(categories.parent) }}
+        <li class="breadcrumb-item" aria-current="page"><a href="{{ path('tree-show', {id: categories.parent.id}) }}">{{ categories.parent.name }}</a></li>
+    {% endif %}
 {% endmacro %}
