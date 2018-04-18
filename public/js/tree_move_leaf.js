@@ -58,6 +58,11 @@ function moveElements(id) {
 
     if(firstElement == null && secondElement == null){
         firstElement = id;
+
+        if(firstElement == 1 && isActivateMove){
+            alert("Nie możesz przenieść tego elementu!");
+            location.reload();
+        }
     }
 
     return false;
@@ -65,7 +70,7 @@ function moveElements(id) {
 
 function sendDataMove() {
     var http = new XMLHttpRequest();
-    http.open("POST", "/tree/move", true);
+    http.open("POST", "/category/move", true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.send("leaf_id=" + firstElement + "&new_parent_id=" + secondElement);
 

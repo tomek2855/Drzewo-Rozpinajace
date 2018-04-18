@@ -46,15 +46,15 @@ function deleteCategoryAll(id) {
         sendDataDelete(id);
 }
 
-function sendDataDelete(id) {   console.log("dupa");
+function sendDataDelete(id) {
     var http = new XMLHttpRequest();
-    http.open("DELETE", "/tree/delete-branch/" + id, true);
+    http.open("DELETE", "/category/delete-branch/" + id, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.send();
 
     http.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            location.reload();
+            window.location.replace("/category/show-children");
         }
         else if (this.readyState == 4 && this.status != 200){
             alert("Wystąpił błąd!");

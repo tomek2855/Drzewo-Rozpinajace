@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\TreeRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
  */
-class Tree {
+class Category {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -23,14 +23,14 @@ class Tree {
     private $id;
     /**
      * One Category has Many Categories.
-     * @OneToMany(targetEntity="Tree", mappedBy="parent")
+     * @OneToMany(targetEntity="Category", mappedBy="parent")
      * @OrderBy({"sequence" = "ASC"})
      */
     private $children;
 
     /**
      * Many Categories have One Category.
-     * @ManyToOne(targetEntity="Tree", inversedBy="children")
+     * @ManyToOne(targetEntity="Category", inversedBy="children")
      * @JoinColumn(name="parent_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $parent;

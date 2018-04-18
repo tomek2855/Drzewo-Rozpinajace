@@ -4,7 +4,7 @@
 
     {% for leaf in category.children %}
         <li>
-            <a href="{{ path('tree-show-depth', {'id': leaf.id}) }}" id="{{ leaf.id }}" onclick="moveElements({{ leaf.id }});deleteCategory({{ leaf.id }});deleteCategoryAll({{ leaf.id }});">{{ leaf.name }}</a>
+            <a href="{{ path('category-show-depth', {'id': leaf.id}) }}" id="{{ leaf.id }}" onclick="moveElements({{ leaf.id }});deleteCategory({{ leaf.id }});deleteCategoryAll({{ leaf.id }});">{{ leaf.name }}</a>
 
             <span style="font-size: small;">({{ leaf.children.count }})</span>
             {% if leaf.children.count > 0 %}
@@ -21,6 +21,6 @@
 
     {% if categories.parent %}
         {{ self.breadcrumb(categories.parent) }}
-        <li class="breadcrumb-item" aria-current="page"><a href="{{ path('tree-show', {id: categories.parent.id}) }}">{{ categories.parent.name }}</a></li>
+        <li class="breadcrumb-item" aria-current="page"><a href="{{ path('category-show', {id: categories.parent.id}) }}">{{ categories.parent.name }}</a></li>
     {% endif %}
 {% endmacro %}

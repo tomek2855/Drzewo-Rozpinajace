@@ -1,72 +1,56 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: tomcio
+ * Date: 18.04.18
+ * Time: 11:36
+ */
 
 namespace App\Controller;
 
-use App\Entity\Tree;
+use App\Entity\Category;
+use App\Utils\DepthOperations;
+use App\Utils\UserOperations;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class TreeController extends Controller {
-    /**
-     * @Route("/tree", name="tree")
-     */
-    public function index($id = 1) {
-        $tree = $this->getDoctrine()->getRepository(Tree::class)->findOneBy([
-            'id' => $id
-        ]);
+class AdminController extends Controller {
 
-        return $this->render('tree/categories.html.twig', [
-           'categories' => $tree
-        ]);
-    }
-///////////////////////////
-    private function recalculateDepth($p){
-        if($p->getChildren())
-            foreach ($p->getChildren() as $child){
-                    $child->setDepth($p->getDepth()+1);
-                    $this->recalculateDepth($child);
-                }
-
-        return true;
+    public function __construct(UserOperations $user) {
+        if(!$user->isLogin()) {
+            $response = new Response('<script>window.location.replace("/");</script>', Response::HTTP_UNAUTHORIZED);
+            $response->send();
+            die;
+        }
     }
 
     /**
-     * @Route("/tree/{id}",
-     *     name="tree-show",
+     * @Route("category/add/{id}",
+     *     name="category-add",
      *     requirements={
      *         "id"="\d+"
      *     }
      * )
      */
-    public function showLeaf($id){
-        return $this->index($id);
-    }
-
-
-    /**
-     * @Route("tree/add/{id}",
-     *     name="tree-add",
-     *     requirements={
-     *         "id"="\d+"
-     *     }
-     * )
-     */
-    public function addLeaf($id, ValidatorInterface $validator){
+    public function addCategory($id, ValidatorInterface $validator){
         $request = Request::createFromGlobals();
         $em = $this->getDoctrine()->getManager();
 
-        $parent = $em->getRepository(Tree::class)->findOneBy([
+        $parent = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
-        $leaf = new Tree();
+        $maxSequence = $em->getRepository(Category::class)->getMaxSequenceInParent($parent);
+
+        $leaf = new Category();
         $leaf->setName($request->request->get('name'));
         $leaf->setParent($parent);
         $leaf->setDepth($parent->getDepth()+1);
-        $leaf->setSequence($em->getRepository(Tree::class)->getMaxSequenceInParent($parent) + 1);
+        $leaf->setSequence($maxSequence + 1);
 
         $errors = $validator->validate($leaf);
         if(count($errors)){
@@ -76,36 +60,37 @@ class TreeController extends Controller {
         $em->persist($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree-show-depth', ['id' => $id]);
+        return $this->redirectToRoute('category-show-depth', ['id' => $id]);
     }
 
     /**
-     * @Route("tree/move",
-     *     name="tree-move",
+     * @Route("category/move",
+     *     name="category-move",
      *     methods={"POST"}
      *  )
      */
-    public function moveLeaf(){
+    public function moveCategory(){
         $request = Request::createFromGlobals();
+        $em = $this->getDoctrine()->getManager();
+        $depth = new DepthOperations();
 
         $leafId = $request->request->get('leaf_id');
         $newParentId = $request->request->get('new_parent_id');
 
-        $em = $this->getDoctrine()->getManager();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $leafId
         ]);
 
 
-        $newParent = $em->getRepository(Tree::class)->findOneBy([
+        $newParent = $em->getRepository(Category::class)->findOneBy([
             'id' => $newParentId
         ]);
 
         $leaf->setParent($newParent);
         $leaf->setDepth($newParent->getDepth() + 1);
-        $leaf->setSequence($em->getRepository(Tree::class)->getMaxSequenceInParent($newParent->getId()) + 1);
-        $this->recalculateDepth($leaf);
+        $leaf->setSequence($em->getRepository(Category::class)->getMaxSequenceInParent($newParent->getId()) + 1);
+        $depth->recalculateDepth($leaf);
 
         $em->persist($leaf);
         $em->flush();
@@ -114,18 +99,19 @@ class TreeController extends Controller {
     }
 
     /**
-     * @Route("tree/delete-leaf/{id}",
-     *     name="tree-delete-leaf",
+     * @Route("category/delete-category/{id}",
+     *     name="category-delete-category",
      *     requirements={
      *          "id"="\d+"
      *      },
      *     methods={"DELETE"}
      * )
      */
-    public function deleteLeaf($id){
+    public function deleteCategory($id){
         $em = $this->getDoctrine()->getManager();
+        $depth = new DepthOperations();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
@@ -134,7 +120,7 @@ class TreeController extends Controller {
         foreach ($leafChildren as $child){
             $child->setParent($leaf->getParent());
             $child->setDepth($leaf->getDepth());
-            $this->recalculateDepth($child);
+            $depth->recalculateDepth($leaf);
         }
 
         $em->remove($leaf);
@@ -145,8 +131,8 @@ class TreeController extends Controller {
 
 
     /**
-     * @Route("tree/delete-branch/{id}",
-     *     name="tree-delete-branch",
+     * @Route("category/delete-branch/{id}",
+     *     name="category-delete-branch",
      *     requirements={
      *          "id"="\d+"
      *      },
@@ -156,7 +142,7 @@ class TreeController extends Controller {
     public function deleteBranch($id){
         $em = $this->getDoctrine()->getManager();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
@@ -167,19 +153,19 @@ class TreeController extends Controller {
     }
 
     /**
-     * @Route("tree/edit/{id}",
-     *     name="tree-edit",
+     * @Route("category/edit/{id}",
+     *     name="category-edit",
      *     requirements={
      *          "id"="\d+"
      *     },
      *     methods={"POST"}
      * )
      */
-    public function treeEdit($id, ValidatorInterface $validator){
+    public function editCategory($id, ValidatorInterface $validator){
         $request = Request::createFromGlobals();
         $em = $this->getDoctrine()->getManager();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
@@ -195,35 +181,35 @@ class TreeController extends Controller {
         $em->persist($leaf);
         $em->flush();
 
-        return $this->redirectToRoute('tree-show-depth', ['id' => $id]);
+        return $this->redirectToRoute('category-show-depth', ['id' => $id]);
     }
 
     /**
-     * @Route("tree/show-children/{id}",
-     *     name="tree-show-depth",
+     * @Route("category/show-categories/{id}",
+     *     name="category-show-depth",
      *     requirements={
      *          "id"="\d+"
      *     }
      *  )
      */
-    public function treeShowOneDepth($id = 1){
-        $tree = $this->getDoctrine()->getRepository(Tree::class)->findOneBy([
+    public function categoryShowAllCategories($id = 1){
+        $tree = $this->getDoctrine()->getRepository(Category::class)->findOneBy([
             'id' => 1
         ]);
 
-        $categories = $this->getDoctrine()->getRepository(Tree::class)->findOneBy([
+        $categories = $this->getDoctrine()->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
-        return $this->render('tree/index.html.twig', [
+        return $this->render('category/index.html.twig', [
             'tree' => $tree,
             'categories' => $categories
         ]);
     }
 
     /**
-     * @Route("tree/set-depth/{id}/up",
-     *     name="tree-set-depth-up",
+     * @Route("category/set-depth/{id}/up",
+     *     name="category-set-depth-up",
      *     requirements={
      *          "id"="\d+"
      *     }
@@ -232,7 +218,7 @@ class TreeController extends Controller {
     public function depthUp($id){
         $em = $this->getDoctrine()->getManager();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
@@ -240,7 +226,7 @@ class TreeController extends Controller {
         $sequence = $leaf->getSequence();
 
         do {
-            $leaf2 = $em->getRepository(Tree::class)->findOneBy([
+            $leaf2 = $em->getRepository(Category::class)->findOneBy([
                 'parent' => $parentId,
                 'sequence' => $sequence - 1
             ]);
@@ -254,12 +240,12 @@ class TreeController extends Controller {
 
         $em->flush();
 
-        return $this->redirectToRoute('tree-show-depth', ['id' => $parentId]);
+        return $this->redirectToRoute('category-show-depth', ['id' => $parentId]);
     }
 
     /**
-     * @Route("tree/set-depth/{id}/down",
-     *     name="tree-set-depth-down",
+     * @Route("category/set-depth/{id}/down",
+     *     name="category-set-depth-down",
      *     requirements={
      *          "id"="\d+",
      *     }
@@ -268,7 +254,7 @@ class TreeController extends Controller {
     public function depthDown($id){
         $em = $this->getDoctrine()->getManager();
 
-        $leaf = $em->getRepository(Tree::class)->findOneBy([
+        $leaf = $em->getRepository(Category::class)->findOneBy([
             'id' => $id
         ]);
 
@@ -276,7 +262,7 @@ class TreeController extends Controller {
         $sequence = $leaf->getSequence();
 
         do {
-            $leaf2 = $em->getRepository(Tree::class)->findOneBy([
+            $leaf2 = $em->getRepository(Category::class)->findOneBy([
                 'parent' => $parentId,
                 'sequence' => $sequence + 1
             ]);
@@ -291,7 +277,7 @@ class TreeController extends Controller {
 
         $em->flush();
 
-        return $this->redirectToRoute('tree-show-depth', ['id' => $parentId]);
+        return $this->redirectToRoute('category-show-depth', ['id' => $parentId]);
     }
 
 }

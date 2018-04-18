@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% import 'tree/macros.html.twig' as macros %}
+{% import 'category/macros.html.twig' as macros %}
 
 {% block title %}Hello!{% endblock %}
 
@@ -19,7 +19,7 @@
     <div class="row">
 
         <div class="col">
-            <h1><a href="{{ path('tree-show-depth', {'id': tree.id}) }}" id="{{ tree.id }}" onclick="moveElements({{ tree.id }});deleteCategory({{ tree.id }});deleteCategoryAll({{ tree.id }});">{{ tree.name }}</a></h1>
+            <h1><a href="{{ path('category-show-depth', {'id': tree.id}) }}" id="{{ tree.id }}" onclick="moveElements({{ tree.id }});deleteCategory({{ tree.id }});deleteCategoryAll({{ tree.id }});">{{ tree.name }}</a></h1>
             <ul>
                 {{ macros.category_tree(tree) }}
             </ul>
@@ -40,13 +40,13 @@
             <ul class="list-group">
                 {% for category in categories.children %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="{{ path('tree-show-depth', {'id': category.id}) }}">{{ category.name }}</a>
+                        <a href="{{ path('category-show-depth', {'id': category.id}) }}" id="{{ category.id }}" onclick="moveElements({{ category.id }});deleteCategory({{ category.id }});deleteCategoryAll({{ category.id }});">{{ category.name }}</a>
 
                             {% if not loop.first %}
-                                <a href="{{ path('tree-set-depth-up', {id: category.id}) }}"><i class="material-icons">arrow_upward</i></a>
+                                <a href="{{ path('category-set-depth-up', {id: category.id}) }}"><i class="material-icons">arrow_upward</i></a>
                             {% endif %}
                             {% if not loop.last %}
-                                <a href="{{ path('tree-set-depth-down', {id: category.id}) }}"><i class="material-icons">arrow_downward</i></a>
+                                <a href="{{ path('category-set-depth-down', {id: category.id}) }}"><i class="material-icons">arrow_downward</i></a>
                             {% endif %}
 
                         <span class="badge badge-primary badge-pill">{{ category.children.count }}</span>
@@ -56,7 +56,7 @@
 
             <br>
 
-            <form action="{{ path('tree-add', {"id": tree.id}) }}" method="post" class="form-inline">
+            <form action="{{ path('category-add', {"id": categories.id}) }}" method="post" class="form-inline">
                 <div class="form-group mb-2">
                     <label for="name">Dodaj nową kategorię</label>
                     <input id="name" name="name" type="text" class="form-control" required="required"></input>
@@ -70,10 +70,10 @@
 
             <br>
 
-            <form action="{{ path('tree-edit', {"id": tree.id}) }}" method="post" class="form-inline">
+            <form action="{{ path('category-edit', {"id": categories.id}) }}" method="post" class="form-inline">
                 <div class="form-group mb-2">
                     <label for="name">Zmień nazwę kategorii</label>
-                    <input id="new_name" name="new_name" type="text" class="form-control" value="{{ tree.name }}" required="required"></input>
+                    <input id="new_name" name="new_name" type="text" class="form-control" value="{{ categories.name }}" required="required"></input>
                 </div>
                 <div class="form-group mb-2">
                     <button class="btn btn-success" type="submit">Zmień nazwę
@@ -82,9 +82,6 @@
                 </div>
             </form>
         </div>
-
-        {#<a href="{{ path('tree-set-depth-up', {"id": categories.id}) }}" class="btn btn-warning">Do góry</a>#}
-        {#<a href="{{ path('tree-set-depth-down', {"id": categories.id}) }}" class="btn btn-danger">Na dół</a>#}
 
     </div>
 
